@@ -6,7 +6,7 @@ for (let i = 0; i < voiceOne.length; i++) {
     timeTotal += voiceOne[i][1];
 }
 // sets the scale of the output
-const unitSize = 100;
+const unitSize = 50;
 const lineHeight = 0.24 * unitSize;
 const staffThickness = unitSize / 75;
 const hexRed = "#BB2F3D";
@@ -21,15 +21,22 @@ c.width = myWidth;
 let ctx = c.getContext("2d");
 
 drawStaff(0, myWidth);
-placeNotes();
+
+// animate the placement of notes
+let intervId;
+let myOffset = 4;
+let myAlpha = 0.07;
+intervId = setInterval(placeNotes, 50);
 
 // place the notes
 function placeNotes() {
+    ctx.clearRect(0, 0, myWidth, myHeight);
+    drawStaff(0, myWidth);
     let oneX = [2];
     let twoX = [2];
     for (let i = 1; i < voiceOne.length; i++) {
-        oneX.push(oneX[i-1] + voiceOne[i-1][1]);
-        twoX.push(twoX[i-1] + voiceTwo[i-1][1]);
+        oneX.push(oneX[i - 1] + voiceOne[i - 1][1]);
+        twoX.push(twoX[i - 1] + voiceTwo[i - 1][1]);
     }
     // add voice crossing offsets
     for (let i = 0; i < voiceOne.length; i++) {
@@ -43,15 +50,30 @@ function placeNotes() {
             }
         }
     }
-    console.log(oneX, twoX);
     for (let i = 0; i < voiceOne.length; i++) {
-        noteUp(oneX[i] / timeTotal, voiceOne[i][0], hexRed);
-        noteDown(twoX[i] / timeTotal, voiceTwo[i][0], hexBlue);
+        noteUp(oneX[i] / timeTotal, voiceOne[i][0], hexRed, myOffset, myAlpha);
+        noteDown(twoX[i] / timeTotal, voiceTwo[i][0], hexBlue, myOffset, myAlpha);
+    }
+
+    if (myAlpha === 1) {
+        clearInterval(intervId);
+    }
+
+    myOffset = myOffset * 2 / 3;
+    let x = 1 - myAlpha;
+    x = x * 2 / 3;
+    myAlpha = 1 - x;
+
+    if (myAlpha > 0.99) {
+        myOffset = 0;
+        myAlpha = 1;
     }
 }
 
 // draw staff lines between two x-coordinates
 function drawStaff(startX, endX) {
+    ctx.beginPath();
+    ctx.strokeStyle = "black";
     for (let i = -(2 * lineHeight); i <= (2 * lineHeight); i += lineHeight) {
         ctx.moveTo(startX, myHeight / 2 + i);
         ctx.lineWidth = staffThickness;
@@ -61,17 +83,19 @@ function drawStaff(startX, endX) {
 }
 
 // create a note with an upward stem
-function noteUp(x, y, color) {
-    drawLedger(x, y);
-    drawNote(x, y, color);
-    drawStemUp(x, y, color);
+function noteUp(x, y, color, offset = 0, alpha = 1) {
+    color += Math.round((alpha) * 255).toString(16).padStart(2);
+    drawLedger(x, y, alpha);
+    drawNote(x, y + offset, color);
+    drawStemUp(x, y + offset, color);
 }
 
 // create a note with a downward stem
-function noteDown(x, y, color) {
-    drawLedger(x, y);
-    drawNote(x, y, color);
-    drawStemDown(x, y, color);
+function noteDown(x, y, color, offset = 0, alpha = 1) {
+    color += Math.round((alpha) * 255).toString(16).padStart(2, "0");
+    drawLedger(x, y, alpha);
+    drawNote(x, y - offset, color);
+    drawStemDown(x, y - offset, color);
 }
 
 // draw a notehead at a given position, plus ledgers if necessary
@@ -146,4 +170,14 @@ function drawStemDown(x, y, color) {
     ctx.moveTo(stemX, stemStartY);
     ctx.lineTo(stemX, stemEndY);
     ctx.stroke();
+}
+
+// converts decimal number to hexadecimal
+function decToHex(dec) {
+    return dec.toString(16);
+}
+
+// padds single-digit hexadecimal to two digits
+function padToTwo(str) {
+    return str.padStart(2);
 }
