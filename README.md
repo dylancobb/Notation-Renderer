@@ -1,0 +1,2 @@
+# About
+This is a very, *very* simple renderer for music notation using JavaScript and an HTML canvas element. Currently it only draws half notes in two voices, but I may extend it to accomodate more rhythmic variety in the future.

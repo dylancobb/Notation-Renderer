@@ -1,0 +1,12 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    text-align: center;
+    color: #bb2f3d
+}
+
+#myCanvas {
+    border: 1px solid #ccc;
+}
